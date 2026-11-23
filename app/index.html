@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Илья — монтажёр: игры и говорящая голова</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Bebas+Neue&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============ TOKENS: mode = style ============ */
+:root{ --ease-out: cubic-bezier(.22,1,.36,1); }
+
+/* GAME = neon */
+body[data-mode="game"]{
+  --bg:#050505; --bg-raise:#101010; --line:#232320;
+  --tx:rgb(229,229,220); --tx-50:rgb(157,157,149); --tx-30:rgba(157,157,149,.45);
+  --accent:rgb(231,255,0); --accent-ink:#050505;
+  --font-display:'Bebas Neue',sans-serif; --font-body:'Manrope',sans-serif;
+  --hero-weight:400; --hero-size:clamp(64px,12vw,188px); --hero-lh:.85;
+  --h2-size:clamp(40px,6vw,80px);
+  --work-t:22px; --svc-name:28px;
+}
+/* TALK = cinematic */
+body[data-mode="talk"]{
+  --bg:#000000; --bg-raise:#0d0d0d; --line:#262626;
+  --tx:#ffffff; --tx-50:rgba(255,255,255,.5); --tx-30:rgba(255,255,255,.3);
+  --accent:#ff3b30; --accent-ink:#ffffff;
+  --font-display:'Archivo',sans-serif; --font-body:'Archivo',sans-serif;
+  --hero-weight:600; --hero-size:clamp(42px,8.5vw,140px); --hero-lh:.94;
+  --h2-size:clamp(28px,4vw,52px);
+  --work-t:18px; --svc-name:22px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font:16px/1.65 var(--font-body);
+  color:var(--tx); background:var(--bg);
+  -webkit-font-smoothing:antialiased;
+  transition:background .3s ease,color .3s ease;
+  overflow-x:hidden;
+}
+::selection{background:var(--accent);color:var(--accent-ink)}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+button{cursor:pointer;font:inherit;color:inherit;background:none;border:none}
+.mono{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+
+/* ============ MODE SWITCH (the core feature) ============ */
+.modeswitch{
+  position:relative;display:inline-flex;
+  border:1px solid var(--line);border-radius:999px;padding:4px;
+  background:rgba(128,128,128,.07);
+}
+.modeswitch .ms-ind{
+  position:absolute;top:4px;bottom:4px;border-radius:999px;
+  background:var(--accent);z-index:0;
+  transition:left .3s var(--ease-out),width .3s var(--ease-out),background .3s;
+}
+.modeswitch .ms-opt{
+  position:relative;z-index:1;
+  font-family:'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--tx-50);border-radius:999px;white-space:nowrap;
+  transition:color .25s var(--ease-out);
+}
+.modeswitch .ms-opt[aria-pressed="true"]{color:var(--accent-ink)}
+/* hero (big, center) */
+.modeswitch.hero-switch .ms-opt{font-size:14px;padding:16px 30px}
+/* header (compact) */
+.head-switch{
+  opacity:0;pointer-events:none;transform:translateY(-4px);
+  transition:opacity .25s var(--ease-out),transform .25s var(--ease-out);
+  margin-left:auto;margin-right:auto;
+}
+body.scrolled .head-switch{opacity:1;pointer-events:auto;transform:none}
+.head-switch .ms-opt{font-size:10px;padding:8px 14px}
+
+/* ============ HEADER ============ */
+.site-head{
+  position:fixed;inset:0 0 auto 0;z-index:50;
+  display:flex;align-items:center;gap:20px;
+  padding:14px 24px;
+}
+.brand{font:600 18px/1 var(--font-display);text-transform:uppercase;letter-spacing:.01em;white-space:nowrap}
+body[data-mode="game"] .brand{font-size:22px}
+.brand em{font-style:normal;color:var(--accent)}
+.xp{display:none;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--tx-50)}
+body[data-mode="game"] .xp{display:flex}
+.xp b{color:var(--accent);font-weight:500}
+.xp .bar{width:84px;height:4px;background:var(--line);position:relative;overflow:hidden}
+.xp .bar i{position:absolute;inset:0;width:62%;background:var(--accent);display:block}
+.site-nav{display:flex;gap:20px}
+.site-nav a{
+  font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;
+  opacity:.5;transition:opacity .2s var(--ease-out);position:relative;padding:6px 0;
+}
+.site-nav a::after{
+  content:"";position:absolute;left:0;bottom:0;height:1px;width:100%;
+  background:currentColor;transform:scaleX(0);transform-origin:left;
+  transition:transform .25s var(--ease-out);
+}
+.site-nav a:hover{opacity:1}
+.site-nav a:hover::after{transform:scaleX(1)}
+
+/* ============ HERO ============ */
+.hero{
+  min-height:100dvh;display:flex;flex-direction:column;
+  padding:88px 24px 32px;gap:28px;
+}
+.hero .top{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.hero .kicker{color:var(--tx-50)}
+.hero .center{flex:1;display:grid;place-items:center}
+.hero .switch-wrap{display:flex;flex-direction:column;align-items:center;gap:14px}
+.hero .switch-hint{color:var(--tx-30)}
+.hero h1{
+  font-family:var(--font-display);font-weight:var(--hero-weight);
+  text-transform:uppercase;letter-spacing:.01em;
+  font-size:var(--hero-size);line-height:var(--hero-lh);
+  margin-left:-.04em;
+}
+.hero h1 .row{display:block;overflow:hidden}
+.hero h1 .row>span{display:inline-block;will-change:transform}
+.hero h1 .hl{color:var(--accent)}
+.hero .meta{display:flex;flex-wrap:wrap;gap:12px 32px;color:var(--tx-50);align-items:baseline}
+.hero .meta .avail{display:inline-flex;align-items:center;gap:8px}
+.hero .meta .avail::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent)}
+/* content swap transition */
+.swap{transition:opacity .22s var(--ease-out),transform .22s var(--ease-out)}
+.swap.out{opacity:0;transform:translateY(8px)}
+
+/* ============ SHOWREEL + SCRUBBER ============ */
+.reel{padding:8px 24px 64px}
+.reel-frame{
+  position:relative;aspect-ratio:16/9;max-height:78vh;width:100%;
+  background:var(--bg-raise);overflow:hidden;cursor:pointer;
+}
+.reel-frame .still{position:absolute;inset:0}
+.reel-frame .play{position:absolute;inset:0;display:grid;place-items:center}
+.play .ring{
+  width:88px;height:88px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.4);
+  display:grid;place-items:center;
+  transition:transform .25s var(--ease-out),background .25s,border-color .25s;
+  background:rgba(0,0,0,.25);backdrop-filter:blur(4px);
+}
+.play .ring svg{margin-left:4px}
+.reel-frame:hover .ring{transform:scale(1.08);border-color:var(--accent)}
+body[data-mode="game"] .reel-frame:hover .ring{background:var(--accent)}
+body[data-mode="game"] .reel-frame:hover .ring svg path{fill:var(--accent-ink)}
+.timecode{
+  position:absolute;left:14px;bottom:12px;
+  font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.08em;
+  color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.6);
+}
+.dur{
+  position:absolute;right:14px;top:12px;
+  font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;
+  background:rgba(0,0,0,.55);color:#fff;padding:4px 8px;
+}
+.reel-frame .dur{top:auto;bottom:12px}
+/* fake caption bars on talk stills */
+.cc{position:absolute;left:50%;bottom:14%;transform:translateX(-50%);display:flex;flex-direction:column;gap:5px;align-items:center}
+.cc i{display:block;height:8px;border-radius:2px;background:rgba(255,255,255,.85)}
+.cc i:first-child{width:180px}
+.cc i:last-child{width:120px}
+.scrubber{
+  margin-top:14px;display:flex;gap:6px;align-items:stretch;
+  overflow-x:auto;padding:10px 12px;
+  background:rgba(128,128,128,.08);
+  border:1px solid var(--line);
+  scrollbar-width:none;
+}
+.scrubber::-webkit-scrollbar{display:none}
+.scrubber .thumb{
+  flex:0 0 120px;aspect-ratio:16/9;position:relative;
+  opacity:.3;transition:opacity .2s var(--ease-out);cursor:pointer;
+}
+.scrubber .thumb:hover,.scrubber .thumb[aria-current="true"]{opacity:1}
+.scrubber .thumb[aria-current="true"]{outline:1px solid var(--accent);outline-offset:-1px}
+.scrubber .thumb i{position:absolute;inset:0;display:block}
+.playhead{width:2px;background:var(--accent);flex:0 0 2px;box-shadow:0 0 12px var(--accent)}
+
+/* ============ WORKS ============ */
+.section{padding:64px 24px}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:28px}
+.section-head h2{
+  font-family:var(--font-display);font-weight:var(--hero-weight);
+  text-transform:uppercase;letter-spacing:.01em;
+  font-size:var(--h2-size);line-height:.95;
+}
+.section-head .count{color:var(--tx-30)}
+.works{display:grid;gap:20px;grid-template-columns:repeat(6,1fr)}
+.work{cursor:pointer}
+.work:nth-child(1){grid-column:span 4}
+.work:nth-child(2){grid-column:span 2}
+.work:nth-child(3){grid-column:span 2}
+.work:nth-child(4){grid-column:span 2}
+.work:nth-child(5){grid-column:span 2}
+.work:nth-child(6){grid-column:span 4}
+.work .frame{position:relative;overflow:hidden;background:var(--bg-raise)}
+.work:nth-child(1) .frame,.work:nth-child(6) .frame{aspect-ratio:16/8}
+.work:nth-child(2) .frame,.work:nth-child(3) .frame,
+.work:nth-child(4) .frame,.work:nth-child(5) .frame{aspect-ratio:16/11}
+.work .frame>i{position:absolute;inset:0;display:block;transition:transform .5s var(--ease-out)}
+.work:hover .frame>i{transform:scale(1.03)}
+.work .cap{display:flex;justify-content:space-between;gap:12px;padding-top:10px;align-items:baseline}
+.work .cap .t{
+  font-family:var(--font-display);font-weight:var(--hero-weight);
+  text-transform:uppercase;letter-spacing:.01em;font-size:var(--work-t);
+  border-bottom:1px solid transparent;transition:border-color .2s;
+}
+.work:hover .cap .t{border-color:currentColor}
+.work .cap .c{color:var(--tx-50);white-space:nowrap}
+
+/* ============ SERVICES ============ */
+.services{border-top:1px solid var(--line)}
+.svc{
+  display:grid;grid-template-columns:64px 1.2fr 2fr auto;gap:20px;align-items:baseline;
+  padding:22px 0;border-bottom:1px solid var(--line);
+  transition:padding-left .25s var(--ease-out);
+}
+.svc:hover{padding-left:12px}
+.svc .idx{color:var(--tx-30);font-family:'JetBrains Mono',monospace;font-size:12px}
+.svc .name{
+  font-family:var(--font-display);font-weight:var(--hero-weight);
+  text-transform:uppercase;letter-spacing:.01em;font-size:var(--svc-name);
+}
+.svc .desc{color:var(--tx-50);font-size:15px;max-width:56ch}
+.svc .arrow{color:var(--tx-30);transition:color .2s,transform .25s var(--ease-out);font-size:20px}
+.svc:hover .arrow{color:var(--accent);transform:translateX(4px)}
+
+/* ============ CONTACT ============ */
+.contact{padding:96px 24px 32px}
+.contact .lead{color:var(--tx-50);max-width:56ch;margin-bottom:20px}
+.contact h2{
+  font-family:var(--font-display);font-weight:var(--hero-weight);
+  text-transform:uppercase;letter-spacing:.01em;
+  line-height:.92;margin-bottom:32px;
+  font-size:var(--hero-size);
+}
+.cta-band{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:26px 24px;margin:0 -24px}
+body[data-mode="game"] .cta-band{background:var(--accent);color:var(--accent-ink)}
+body[data-mode="talk"] .cta-band{border:1px solid var(--line)}
+.cta-band .big{
+  font-family:var(--font-display);font-weight:var(--hero-weight);
+  text-transform:uppercase;letter-spacing:.01em;font-size:clamp(20px,3vw,34px);
+}
+.cta-band .mono{opacity:.7}
+.foot{
+  display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between;
+  padding:28px 24px;color:var(--tx-30);
+  font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+}
+
+/* ============ CSS STILLS ============ */
+.still{background:#111}
+.still::before{
+  content:"";position:absolute;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity:.14;mix-blend-mode:overlay;
+}
+.still::after{
+  content:"";position:absolute;inset:0;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.14) 0 1px,transparent 1px 4px),
+    radial-gradient(120% 90% at 50% 40%,transparent 55%,rgba(0,0,0,.55) 100%);
+}
+.s-1{background:radial-gradient(90% 120% at 15% 85%,rgba(0,229,255,.5),transparent 55%),radial-gradient(80% 100% at 85% 15%,rgba(147,51,234,.65),transparent 60%),linear-gradient(160deg,#12081f,#040208 70%)}
+.s-2{background:radial-gradient(70% 90% at 80% 80%,rgba(255,77,0,.55),transparent 55%),radial-gradient(60% 80% at 20% 20%,rgba(255,0,0,.35),transparent 60%),linear-gradient(200deg,#1c0602,#070302 70%)}
+.s-3{background:radial-gradient(80% 110% at 80% 20%,rgba(74,222,128,.45),transparent 55%),radial-gradient(70% 90% at 15% 85%,rgba(20,83,45,.6),transparent 60%),linear-gradient(150deg,#04140a,#020805 70%)}
+.s-4{background:radial-gradient(90% 100% at 20% 15%,rgba(96,165,250,.5),transparent 55%),radial-gradient(70% 90% at 85% 85%,rgba(30,58,138,.7),transparent 60%),linear-gradient(170deg,#050a18,#020409 70%)}
+.s-5{background:radial-gradient(80% 100% at 75% 25%,rgba(250,204,21,.4),transparent 55%),radial-gradient(70% 90% at 20% 80%,rgba(120,53,15,.55),transparent 60%),linear-gradient(160deg,#160f02,#070502 70%)}
+.s-6{background:radial-gradient(90% 110% at 80% 80%,rgba(236,72,153,.5),transparent 55%),radial-gradient(70% 90% at 15% 15%,rgba(88,28,135,.65),transparent 60%),linear-gradient(200deg,#170512,#060208 70%)}
+.s-7{background:radial-gradient(80% 100% at 25% 75%,rgba(45,212,191,.45),transparent 55%),radial-gradient(70% 90% at 80% 20%,rgba(15,23,42,.8),transparent 60%),linear-gradient(150deg,#02100e,#010606 70%)}
+
+/* ============ REVEAL ============ */
+.js .rv{opacity:.06;filter:blur(10px);transform:translateY(14px);
+  transition:opacity .7s var(--ease-out),filter .7s var(--ease-out),transform .7s var(--ease-out)}
+.js .rv.in{opacity:1;filter:blur(0);transform:none}
+.js .hero h1 .row>span{transform:translateY(110%);transition:transform .8s var(--ease-out)}
+.js .hero h1 .row>span.in{transform:none}
+
+/* ============ CUSTOM CURSOR (game mode only) ============ */
+@media (hover:hover) and (pointer:fine){
+  body[data-mode="game"]{cursor:none}
+  body[data-mode="game"] a,body[data-mode="game"] button,body[data-mode="game"] .work,body[data-mode="game"] .thumb,body[data-mode="game"] .reel-frame{cursor:none}
+  .cursor{
+    position:fixed;left:0;top:0;z-index:100;pointer-events:none;
+    width:10px;height:10px;background:var(--accent);
+    transform:translate(-50%,-50%);
+    display:none;align-items:center;justify-content:center;
+    transition:width .18s var(--ease-out),height .18s var(--ease-out),border-radius .18s;
+  }
+  body[data-mode="game"] .cursor{display:flex}
+  .cursor.play{width:56px;height:56px;border-radius:50%}
+  .cursor.play::after{
+    content:"PLAY";font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;color:var(--accent-ink);
+  }
+}
+@media (hover:none),(pointer:coarse){.cursor{display:none!important}}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width:900px){
+  .works{grid-template-columns:repeat(2,1fr)}
+  .work:nth-child(n){grid-column:span 2}
+  .work:nth-child(n) .frame{aspect-ratio:16/9}
+  .svc{grid-template-columns:40px 1fr;grid-template-rows:auto auto}
+  .svc .desc{grid-column:2}
+  .svc .arrow{display:none}
+  .site-nav{display:none}
+  .xp{display:none!important}
+  .modeswitch.hero-switch .ms-opt{font-size:11px;padding:13px 16px}
+}
+@media (max-width:560px){
+  html{overflow-x:hidden}
+  .hero,.section,.reel,.contact{padding-left:16px;padding-right:16px}
+  .site-head{padding:12px 16px;gap:12px}
+  .site-head .brand{position:absolute;opacity:0;pointer-events:none}
+  .head-switch{margin:0 auto}
+  .head-switch .ms-opt{font-size:10px;padding:8px 12px}
+  .cta-band{margin:0 -16px;padding:22px 16px;flex-direction:column;align-items:flex-start}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .js .rv,.js .hero h1 .row>span{opacity:1;filter:none;transform:none}
+}
+</style>
+</head>
+<body data-mode="game">
+<div class="cursor" aria-hidden="true"></div>
+
+<header class="site-head">
+  <a class="brand" href="#top">ИЛЬЯ<em>.</em>МОНТАЖ</a>
+  <div class="xp" aria-hidden="true">
+    <span>LVL <b>5</b></span>
+    <span class="bar"><i></i></span>
+    <span>XP <b>62%</b></span>
+  </div>
+  <div class="modeswitch head-switch" role="group" aria-label="Режим портфолио">
+    <span class="ms-ind" aria-hidden="true"></span>
+    <button class="ms-opt" data-mode-btn="game" aria-pressed="true">Игровой монтаж</button>
+    <button class="ms-opt" data-mode-btn="talk" aria-pressed="false">Говорящая голова</button>
+  </div>
+  <nav class="site-nav" aria-label="Основная навигация">
+    <a href="#works">Работы</a>
+    <a href="#services">Услуги</a>
+    <a href="#contact">Контакты</a>
+  </nav>
+</header>
+
+<main id="top">
+  <!-- HERO -->
+  <section class="hero">
+    <div class="top">
+      <p class="kicker mono swap" id="kicker">Монтажёр · игровой контент · 3+ года за таймлайном</p>
+      <p class="kicker mono rv" style="text-align:right">Портфолио<br>2026</p>
+    </div>
+
+    <div class="center">
+      <div class="switch-wrap">
+        <div class="modeswitch hero-switch" role="group" aria-label="Выбор направления">
+          <span class="ms-ind" aria-hidden="true"></span>
+          <button class="ms-opt" data-mode-btn="game" aria-pressed="true">Игровой монтаж</button>
+          <button class="ms-opt" data-mode-btn="talk" aria-pressed="false">Говорящая голова</button>
+        </div>
+        <span class="switch-hint mono">← выбери направление →</span>
+      </div>
+    </div>
+
+    <div>
+      <h1 id="heroTitle" aria-live="polite">
+        <span class="row"><span>Монтаж,</span></span>
+        <span class="row"><span>который <span class="hl">держит</span></span></span>
+        <span class="row"><span>до конца</span></span>
+      </h1>
+      <div class="meta swap" id="heroMeta" style="margin-top:18px">
+        <span class="avail mono">Открыт для заказов</span>
+        <span class="mono" id="heroTags">Фрагмуви · хайлайты · shorts · рекапы</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SHOWREEL -->
+  <section class="reel" aria-label="Шоурил">
+    <div class="reel-frame rv" role="button" tabindex="0" aria-label="Смотреть шоурил">
+      <i class="still s-1" id="reelStill"></i>
+      <div class="play"><div class="ring">
+        <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="#fff"/></svg>
+      </div></div>
+      <span class="timecode" id="reelName">SHOWREEL_GAME_2026.MP4</span>
+      <span class="dur" id="reelDur">01:24</span>
+    </div>
+    <div class="scrubber" role="tablist" aria-label="Главы шоурила" id="scrubber"></div>
+  </section>
+
+  <!-- WORKS -->
+  <section class="section" id="works">
+    <div class="section-head">
+      <h2>Работы</h2>
+      <span class="count mono" id="worksCount">(06)</span>
+    </div>
+    <div class="works" id="worksGrid"></div>
+  </section>
+
+  <!-- SERVICES -->
+  <section class="section services" id="services">
+    <div class="section-head">
+      <h2>Услуги</h2>
+      <span class="count mono" id="svcCount">(04)</span>
+    </div>
+    <div id="svcList"></div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="contact" id="contact">
+    <p class="lead swap" id="contactLead">Есть футаж и дедлайн? Скидывай — отвечу в течение дня, скажу сроки и цену после просмотра материала.</p>
+    <h2 class="rv" id="contactTitle">Давай <span class="hl">смонтируем</span></h2>
+    <div class="cta-band rv">
+      <span class="big">Telegram: @твой_ник</span>
+      <span class="mono">Заменим на твои контакты · Discord · Почта</span>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <span>© 2026 Илья · Монтаж</span>
+  <span id="footNote">Сделано на таймлайне № 247</span>
+</footer>
+
+<script>
+document.documentElement.classList.add('js');
+(function(){
+  var body=document.body;
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ============ CONTENT PER MODE ============ */
+  var CONTENT={
+    game:{
+      kicker:'Монтажёр · игровой контент · 3+ года за таймлайном',
+      title:['Монтаж,','который <span class="hl">держит</span>','до конца'],
+      tags:'Фрагмуви · хайлайты · shorts · рекапы',
+      reelName:'SHOWREEL_GAME_2026.MP4', reelDur:'01:24',
+      thumbs:['s-1','s-2','s-6','s-3','s-4','s-7'],
+      works:[
+        {t:'Cyber Arena — фрагмуви',c:'CS2 · монтаж',d:'02:31',s:'s-1'},
+        {t:'Boss Fight',c:'Хайлайты стрима',d:'08:14',s:'s-2'},
+        {t:'Инди-трейлер',c:'Steam · трейлер',d:'01:05',s:'s-3'},
+        {t:'Speedrun Any%',c:'Рекап',d:'12:40',s:'s-4'},
+        {t:'Clutch Moments',c:'Нарезка · shorts',d:'00:44',s:'s-7'},
+        {t:'Neon District',c:'Монтаж · sound design',d:'01:47',s:'s-6'}
+      ],
+      services:[
+        {n:'Игровой монтаж',d:'Фрагмуви, хайлайты, рекапы. Синхрон под музыку, ритм, чистая картинка геймплея.'},
+        {n:'Нарезки стримов',d:'Лучшие моменты за 3–6 часов стрима — в ролик на 10 минут. Регулярные пакеты для стримеров.'},
+        {n:'Shorts / Reels / TikTok',d:'Вертикалка с хуком в первую секунду, динамичные субтитры, удержание до конца.'},
+        {n:'Трейлеры игр',d:'Steam-трейлеры и анонсы: структура, нарастание, финальный удар с логотипом.'}
+      ],
+      lead:'Есть футаж и дедлайн? Скидывай — отвечу в течение дня, скажу сроки и цену после просмотра материала.',
+      cta:'Давай <span class="hl">смонтируем</span>'
+    },
+    talk:{
+      kicker:'Монтажёр · подкасты и экспертный контент · 3+ года за таймлайном',
+      title:['Голос,','который <span class="hl">дослушают</span>','до конца'],
+      tags:'Подкасты · интервью · shorts · курсы',
+      reelName:'SHOWREEL_TALK_2026.MP4', reelDur:'01:12',
+      thumbs:['s-5','s-4','s-7','s-2','s-3','s-6'],
+      works:[
+        {t:'Подкаст о бизнесе',c:'Нарезка · 3 платформы',d:'00:58',s:'s-5',cc:true},
+        {t:'Интервью с фаундером',c:'Полный монтаж',d:'24:10',s:'s-4',cc:true},
+        {t:'Shorts для эксперта',c:'Вертикалка · субтитры',d:'00:45',s:'s-7',cc:true},
+        {t:'Урок онлайн-курса',c:'Чистка · графика',d:'18:30',s:'s-3'},
+        {t:'Вебинар — репак',c:'Чистка · таймкоды',d:'45:00',s:'s-2'},
+        {t:'Промо-интервью',c:'Анонс · b-roll',d:'01:30',s:'s-6',cc:true}
+      ],
+      services:[
+        {n:'Подкасты и интервью',d:'Многокамерный монтаж, чистка пауз, звук без усталости, обложки фрагментов.'},
+        {n:'Shorts из длинных видео',d:'Нахожу цепляющие моменты и упаковываю в вертикалку с субтитрами и зумами.'},
+        {n:'Онлайн-курсы',d:'Уроки и вебинары: чистка, графика, титры, единый стиль всего курса.'},
+        {n:'Субтитры и звук',d:'Динамичные субтитры, сведение голоса, музыка и саунд-дизайн под речь.'}
+      ],
+      lead:'Записал подкаст или интервью? Пришли черновик — верну ролик, который досмотрят, и пачку shorts в придачу.',
+      cta:'Давай <span class="hl">обсудим</span>'
+    }
+  };
+
+  /* ============ RENDERERS ============ */
+  var heroTitle=document.getElementById('heroTitle');
+  var worksGrid=document.getElementById('worksGrid');
+  var svcList=document.getElementById('svcList');
+  var scrubber=document.getElementById('scrubber');
+  var reelStill=document.getElementById('reelStill');
+
+  function renderTitle(lines,animate){
+    heroTitle.innerHTML=lines.map(function(l){
+      return '<span class="row"><span>'+l+'</span></span>';
+    }).join('');
+    var spans=heroTitle.querySelectorAll('.row>span');
+    if(reduce||!animate){spans.forEach(function(s){s.classList.add('in')});return}
+    spans.forEach(function(s,i){setTimeout(function(){s.classList.add('in')},60+i*110)});
+  }
+  function renderWorks(list){
+    document.getElementById('worksCount').textContent='(0'+list.length+')';
+    worksGrid.innerHTML=list.map(function(w){
+      return '<article class="work">'+
+        '<div class="frame"><i class="still '+w.s+'"></i>'+
+        (w.cc?'<span class="cc" aria-hidden="true"><i></i><i></i></span>':'')+
+        '<span class="dur">'+w.d+'</span></div>'+
+        '<div class="cap"><span class="t">'+w.t+'</span><span class="c mono">'+w.c+'</span></div>'+
+      '</article>';
+    }).join('');
+  }
+  function renderServices(list){
+    document.getElementById('svcCount').textContent='(0'+list.length+')';
+    svcList.innerHTML=list.map(function(s,i){
+      return '<div class="svc">'+
+        '<span class="idx">0'+(i+1)+'</span>'+
+        '<span class="name">'+s.n+'</span>'+
+        '<span class="desc">'+s.d+'</span>'+
+        '<span class="arrow" aria-hidden="true">→</span>'+
+      '</div>';
+    }).join('');
+  }
+  function renderScrubber(stills){
+    scrubber.innerHTML=stills.map(function(s,i){
+      return (i===1?'<div class="playhead" aria-hidden="true"></div>':'')+
+        '<div class="thumb" role="tab" aria-current="'+(i===0)+'" tabindex="0" data-still="'+s+'"><i class="still '+s+'"></i></div>';
+    }).join('');
+    bindThumbs();
+    reelStill.className='still '+stills[0];
+  }
+  function bindThumbs(){
+    var thumbs=[].slice.call(scrubber.querySelectorAll('.thumb'));
+    function select(th){
+      thumbs.forEach(function(t){t.setAttribute('aria-current',t===th?'true':'false')});
+      reelStill.className='still '+th.getAttribute('data-still');
+    }
+    thumbs.forEach(function(th){
+      th.addEventListener('click',function(){select(th)});
+      th.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();select(th)}});
+    });
+  }
+
+  /* ============ MODE SWITCH ============ */
+  var current='game';
+  function applyMode(mode,animate){
+    var c=CONTENT[mode];
+    current=mode;
+    body.setAttribute('data-mode',mode);
+    document.querySelectorAll('[data-mode-btn]').forEach(function(b){
+      b.setAttribute('aria-pressed',b.getAttribute('data-mode-btn')===mode?'true':'false');
+    });
+    positionIndicators();
+    try{localStorage.setItem('pf-mode',mode)}catch(e){}
+    document.getElementById('kicker').textContent=c.kicker;
+    document.getElementById('heroTags').textContent=c.tags;
+    document.getElementById('reelName').textContent=c.reelName;
+    document.getElementById('reelDur').textContent=c.reelDur;
+    document.getElementById('contactLead').textContent=c.lead;
+    document.getElementById('contactTitle').innerHTML=c.cta;
+    renderTitle(c.title,animate);
+    renderWorks(c.works);
+    renderServices(c.services);
+    renderScrubber(c.thumbs);
+  }
+  function switchMode(mode){
+    if(mode===current)return;
+    if(reduce){applyMode(mode,false);return}
+    var swappers=document.querySelectorAll('.swap');
+    swappers.forEach(function(el){el.classList.add('out')});
+    setTimeout(function(){
+      applyMode(mode,true);
+      swappers.forEach(function(el){el.classList.remove('out')});
+    },220);
+  }
+  document.querySelectorAll('[data-mode-btn]').forEach(function(b){
+    b.addEventListener('click',function(){switchMode(b.getAttribute('data-mode-btn'))});
+  });
+
+  /* indicator position */
+  function positionIndicators(){
+    document.querySelectorAll('.modeswitch').forEach(function(sw){
+      var active=sw.querySelector('.ms-opt[aria-pressed="true"]');
+      var ind=sw.querySelector('.ms-ind');
+      if(!active||!ind)return;
+      ind.style.left=active.offsetLeft+'px';
+      ind.style.width=active.offsetWidth+'px';
+    });
+  }
+  window.addEventListener('resize',positionIndicators);
+  if(document.fonts&&document.fonts.ready){document.fonts.ready.then(positionIndicators)}
+
+  /* header switch appears when hero switch is out of view */
+  var heroSwitch=document.querySelector('.hero-switch');
+  new IntersectionObserver(function(entries){
+    body.classList.toggle('scrolled',!entries[0].isIntersecting);
+  },{rootMargin:'-80px 0px 0px 0px'}).observe(heroSwitch);
+
+  /* reveal on scroll */
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target)}
+    });
+  },{rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.rv').forEach(function(el){io.observe(el)});
+
+  /* custom cursor (game mode visuals; fine pointers only) */
+  var cursor=document.querySelector('.cursor');
+  var fine=window.matchMedia('(hover:hover) and (pointer:fine)').matches;
+  if(fine&&!reduce){
+    var cx=0,cy=0,tx=0,ty=0,raf=null;
+    function loop(){
+      cx+=(tx-cx)*.22;cy+=(ty-cy)*.22;
+      cursor.style.transform='translate('+cx+'px,'+cy+'px) translate(-50%,-50%)';
+      raf=requestAnimationFrame(loop);
+    }
+    window.addEventListener('mousemove',function(e){
+      tx=e.clientX;ty=e.clientY;
+      if(!raf)loop();
+      var hot=e.target.closest('.work,.thumb,.reel-frame');
+      cursor.classList.toggle('play',!!hot);
+    },{passive:true});
+    document.addEventListener('mouseleave',function(){cancelAnimationFrame(raf);raf=null});
+  }
+
+  /* init */
+  var saved=null;
+  try{saved=localStorage.getItem('pf-mode')}catch(e){}
+  applyMode((saved==='talk')?'talk':'game',true);
+  setTimeout(positionIndicators,50);
+})();
+</script>
+</body>
+</html>

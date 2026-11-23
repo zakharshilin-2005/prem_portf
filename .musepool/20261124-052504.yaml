@@ -1,0 +1,152 @@
+items:
+- short_id: rehvIwc3
+  seed: |
+    # Narrative
+
+    A film director and photographer portfolio. The narrative centers on showcasing commercial work through an immersive video-first experience. The hero is the showreel — autoplaying full-bleed video with project titles overlaid. The header provides biographical context and agency affiliation. The bottom scrubber acts as both navigation and content preview, allowing direct access to individual projects.
+
+    # Tech Stack
+
+    SvelteKit SPA with Vite build. Tailwind CSS for styling. Mux for video hosting and streaming (HLS). Sanity CMS for content management. GSAP or custom animation for the scrubber interactions.
+
+    # Layout
+
+    Full-bleed video canvas with fixed UI overlays. Header fixed top with flexbox distribution: brand left (20%), bio center (60%), agency link right (20%). Bottom scrubber bar fixed at 50px height with horizontal scrollable thumbnails. Project titles appear as large typography overlays on the left side of the viewport. No vertical scrolling — navigation is scrubber-driven.
+
+    # Typography
+
+    Neue Haas Grotesk (Neue Haas Grotesk Display Medium for headings, Text Regular for body). All-caps treatment for body text and navigation. Tracking-wide letter-spacing throughout. Hierarchy: brand name (text-xl to text-2xl), project titles (large display size), bio text (text-xs uppercase with opacity-50).
+
+    # Color
+
+    Pure black background (#000000). White text (#ffffff) with opacity variations for hierarchy: full opacity for active elements, 50% opacity for secondary text. Single accent: red playhead indicator (#ff0000) in the scrubber. No other colors — strictly monochrome with the red functional accent.
+
+    # Imagery
+
+    Video-first: autoplaying showreel as full-bleed background. Thumbnail strip at bottom showing project stills — small landscape crops acting as chapter markers. Images are film/video production stills, fashion photography, commercial work. Thumbnails have 30% opacity default, 100% on hover.
+
+    # Components
+
+    **Scrubber bar**: Fixed bottom, glass-like treatment with `bg-gray-600 bg-opacity-10`, `border-neutral-600`, rounded-md, heavy drop-shadow (`drop-shadow-[0_0px_35px_rgba(0,0,0,0.7)]`). Contains draggable playhead — red vertical line (#ff0000) with drop-shadow.
+
+    **Project title overlay**: Large white typography, left-aligned, appears over video with "OPEN" button below — small pill button with border, hover opacity change.
+
+    **Header links**: No visible underline, opacity-50 default, hover to full opacity.
+
+    # Motion
+
+    Video is the primary motion layer — autoplaying showreel. Scrubber supports drag-to-seek with real-time thumbnail updates. Thumbnails have `transition-opacity duration-200` on hover. Header uses `mix-blend-hard-light` for dynamic contrast against changing video backgrounds. Smooth transforms on the scrubber (`will-change-transform`, `transform: translate3d`).
+
+    # Algorithms
+
+    Standard implementation, no special design.
+
+    # Material
+
+    Glass-like surface on scrubber via semi-transparent background (`bg-opacity-10`) combined with border and heavy drop-shadow. No noise or texture — pure digital matte surfaces.
+
+    # Craft
+
+    `mix-blend-hard-light` on header ensures text remains visible against both light and dark video content. `select-none` on UI elements prevents text selection during scrubbing. `backface-hidden` and `will-change-transform` optimize scrubber performance. Red playhead provides clear temporal orientation.
+
+    # Coherence
+
+    The design commits to a cinematic, dark-room aesthetic. Every element supports the video-first experience: minimal UI chrome, monochrome palette to avoid competing with content, glass-morphism scrubber that feels like a professional video player interface. The red playhead is the only color accent — functional, not decorative.
+- short_id: QTJvedvz
+  seed: |
+    # Narrative
+
+    Independent studio practice portfolio showcasing brand identity and interaction design work. The site presents as a gamified creative portfolio — an "XP system" header displays designer level (2), class (Wanderer), and experience progress (6/22 XP). Work samples span brand identities, generative media platforms, and experimental typography. The narrative flow: gamified header → animated typographic hero → dense project grid → press/recognition footer.
+
+    # Tech Stack
+
+    Webflow with custom JavaScript enhancements. React-based interactions via Webflow IX2. p5.js present in bundle (generative/algorithmic capabilities). Custom cursor system overrides native pointer.
+
+    # Layout
+
+    Asymmetric split composition. Left sidebar: persistent gamified status system (level, class, XP bar). Right main: scrolling project feed with oversized typographic hero. Project grid uses irregular masonry — varying aspect ratios, mixed media types (still, GIF, video). Full-bleed imagery with minimal chrome. Sticky preview stack appears bottom-left on hover (fixed position, 400px width, 80vh max-height).
+
+    # Typography
+
+    Dual variable font system. **ABC Oracle Plus Variable** (primary display): weight + "TRIP" axis animated on hero text — "TRIP" value shifts from 0 to ~0.87 creating dimensional extrusion effect. **Input Cipher** (monospace UI): technical/meta text, navigation, labels. **AS Thermal** (accent): decorative/display moments. **Herbik** (secondary): body/meta typography. Hero display set at extreme scale (viewport-filling), split across multiple animated spans. Monospace captions use tight leading, small scale (12-14px).
+
+    # Color
+
+    Light-mode dominant with project-driven color shifts. Base: near-white `#fff` background, black `#000` text. Accent: bright blue `#0095ff` (XP bar, class indicator, interactive states). Project imagery injects vibrant color — lime greens, hot pinks, electric blues, deep purples. Selection color: dark navy `#020c1a` with white text. Hero text uses pale blue-gray `#cde0f5` (rgb 205, 224, 245).
+
+    # Imagery
+
+    Mixed-media project documentation: brand guidelines spreads, UI screenshots, 3D renders, generative art, motion GIFs, video loops. Heavy use of animated GIFs for interaction demos. Diverse aspect ratios — square, portrait, landscape, ultra-wide. No consistent image treatment; each project retains its native aesthetic. Thumbnail grid at bottom shows press logos and recognition.
+
+    # Components
+
+    **XP System Header**: Level badge, class label (color-coded), progress bar with fill percentage (27.27% width), XP count. **Custom Cursor**: 10px black square (rgba 0,0,0,0.8), follows mouse with 0.05s ease transition, native cursor hidden. **Project Cards**: Full-bleed thumbnails with hover-triggered preview stack. **Preview Stack**: Fixed bottom-left, 400px width, shows project preview images on hover with 0.3s opacity fade. **Animated Hero**: Split-text variable font with per-character TRIP axis animation.
+
+    # Motion
+
+    Hero typography: per-character font-variation-settings animation on "TRIP" axis (0 → 0.87), creating 3D extrusion illusion. Smooth cursor tracking: custom square follows mouse with slight delay (transform transition 0.05s ease). Background color transitions: body bg shifts 0.3s on state changes. Preview stack: opacity fade 0.3s ease on hover enter/exit. Fade-in/fade-out classes for scroll reveals (0.3s ease-in-out). Page uses will-change: font-variation-settings for GPU acceleration.
+
+    # Algorithms
+
+    Standard implementation, no special design.
+
+    # Material
+
+    Standard implementation, no special design.
+
+    # Craft
+
+    Custom cursor completely replaces native pointer (body {cursor: none}). Selection styling: dark navy background `#020c1a` with white text. XP bar uses dynamic width percentage with brightness filter adjustment. Font loading: woff2 variable fonts with specific axis controls. Preview pointer-events: none on container, managed via JavaScript hover detection.
+- short_id: nzlx9NED
+  seed: |
+    # Narrative
+
+    A brand creation and experience design studio portfolio. The narrative opens with a typographic punch — the studio wordmark rendered at massive scale — establishing immediate confidence. Below, a 3-column masonry grid showcases case studies (SUGAR POP, Simba Beer, HDFC Sky, Clout, SUGAR Play) with project thumbnails and underlined category labels. A manifesto section follows with "We Do. We Undo. We Never Stay Still." paired with a rotating logo mark. The page closes with a client roster in a 4-column grid and a full-width neon yellow CTA bar reading "GET IN TOUCH".
+
+    # Tech Stack
+
+    Framer site builder with SSR output. Google Fonts loading Bebas Neue and Manrope. CSS custom properties for theming. No external animation libraries detected — motion handled via Framer's native animation system.
+
+    # Layout
+
+    Full-bleed dark canvas with content constrained to a central container. Hero uses extreme scale: the studio wordmark spans nearly the full viewport width at 410px font-size. Below, a 3-column asymmetric grid displays portfolio items with varying aspect ratios. A 4-column grid presents the client list. The footer CTA is a solid horizontal band. Negative space is generous — the black background breathes between dense content zones.
+
+    # Typography
+
+    Dual-font system: **Bebas Neue** (condensed display sans) for the hero wordmark at 410px with 83% line-height, creating a compressed vertical stack. **Manrope** (geometric sans) for all body text at weights 500-700. Body copy at 16-25px with tight negative letter-spacing (-0.4px to -0.5px). Section headlines at 80px/700 weight. Captions use underlined links at 18px/600 weight.
+
+    # Color
+
+    Near-black background `#050505` with off-white text `rgb(229, 229, 220)` for reduced contrast harshness. Signature neon yellow accent `rgb(231, 255, 0)` (≈#E7FF00) used for header labels, email links, and the footer CTA band. Pure white reserved for the hero wordmark and major headlines. Secondary text in muted gray `rgb(157, 157, 149)`.
+
+    # Imagery
+
+    Portfolio thumbnails are the primary visual carriers — showing brand identity work, packaging systems, app interfaces, and illustration. Images are presented in their native aspect ratios within the grid, creating a dynamic masonry feel. A small animated logo mark appears beside the manifesto — a pink snake-like form wrapping around text.
+
+    # Components
+
+    Portfolio cards: image thumbnail + underlined project category label below. Client list items: simple text labels in a grid without visual containers. CTA button: full-width neon yellow bar with centered black text. Email link in header: underlined with arrow icon.
+
+    # Motion
+
+    Standard Framer scroll behaviors. No complex scroll-driven animations detected in the frozen snapshot. Hover states likely on portfolio cards and links (underline treatments suggest interactivity). The logo mark beside the manifesto may have subtle rotation/animation.
+
+    # Algorithms
+
+    Standard implementation, no special design.
+
+    # Material
+
+    Standard implementation, no special design.
+
+    # Craft
+
+    Tight typographic detailing: negative letter-spacing throughout, precise line-height compression on the hero (83%). Consistent underline treatment on interactive text. The neon yellow accent is applied with restraint — only to interactive elements and the final CTA.
+
+    # Coherence
+
+    The high-contrast black/neon-yellow pairing with condensed display typography creates a confident, contemporary studio presence. The restrained palette lets the colorful portfolio work speak while the typography establishes brand authority.
+
+<system-reminder>
+The risk is not borrowing too little — it is subconsciously simplifying what you borrowed. Cutting corners is forbidden in any form: never replace a reference's technique, material, structure, or motion with a cheaper version of your own. Downgrades follow repeatable patterns (illustrative, not exhaustive): input-driven motion (scroll/pointer/time) → one-shot keyframes or static states; shape-language transformation (morph/clip/mask) → the cheapest properties (scale/translate/opacity); asymmetric layout rhythm (irregular grids, editorial composition) → uniform columns and full-width stacks; layered material (blend/texture/depth) → flat single-layer fills; bespoke vessels (framing devices, illustrated components) → default cards and pills; choreographed sequences (staged, multi-step, gated) → single triggers or fakes; typographic systems (pairing/scale/font features) → swapping the font-family; styled components → library-default skins. If your version is simpler than the reference's, that is a downgrade. Implement at the reference's fidelity.
+</system-reminder>
