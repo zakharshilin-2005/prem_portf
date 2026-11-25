@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Илья — монтажёр: игры и говорящая голова</title>
+<title>Шилин Захар — монтажёр: игры и говорящая голова</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Bebas+Neue&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Bebas+Neue&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
 /* ============ TOKENS: mode = style ============ */
-:root{ --ease-out: cubic-bezier(.22,1,.36,1); }
+:root{ --ease-out: cubic-bezier(.22,1,.36,1); --ui-blue:#35a8e0; }
 
 /* GAME = neon */
 body[data-mode="game"]{
@@ -17,7 +17,7 @@ body[data-mode="game"]{
   --tx:rgb(229,229,220); --tx-50:rgb(157,157,149); --tx-30:rgba(157,157,149,.45);
   --accent:rgb(231,255,0); --accent-ink:#050505;
   --font-display:'Bebas Neue',sans-serif; --font-body:'Manrope',sans-serif;
-  --hero-weight:400; --hero-size:clamp(64px,12vw,188px); --hero-lh:.85;
+  --hero-weight:400; --hero-size:clamp(56px,9.5vw,150px); --hero-lh:.85;
   --h2-size:clamp(40px,6vw,80px);
   --work-t:22px; --svc-name:28px;
 }
@@ -27,7 +27,7 @@ body[data-mode="talk"]{
   --tx:#ffffff; --tx-50:rgba(255,255,255,.5); --tx-30:rgba(255,255,255,.3);
   --accent:#ff3b30; --accent-ink:#ffffff;
   --font-display:'Archivo',sans-serif; --font-body:'Archivo',sans-serif;
-  --hero-weight:600; --hero-size:clamp(42px,8.5vw,140px); --hero-lh:.94;
+  --hero-weight:600; --hero-size:clamp(40px,7.5vw,120px); --hero-lh:.94;
   --h2-size:clamp(28px,4vw,52px);
   --work-t:18px; --svc-name:22px;
 }
@@ -45,6 +45,119 @@ a{color:inherit;text-decoration:none}
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 button{cursor:pointer;font:inherit;color:inherit;background:none;border:none}
 .mono{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+main{position:relative;z-index:1}
+
+/* ============ BACKGROUND: checkerboard + blue editor UI (both modes) ============ */
+.bg-ui{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(45deg,rgba(255,255,255,.04) 25%,transparent 25%,transparent 75%,rgba(255,255,255,.04) 75%),
+    linear-gradient(45deg,rgba(255,255,255,.04) 25%,transparent 25%,transparent 75%,rgba(255,255,255,.04) 75%);
+  background-size:64px 64px;
+  background-position:0 0,32px 32px;
+}
+.bg-ui .bg-node{position:absolute;opacity:.34}
+.bg-ui .n1{left:-30px;top:16%;width:240px}
+.bg-ui .n2{right:-24px;bottom:12%;width:220px;transform:scaleX(-1)}
+.bg-ui .bg-select{
+  position:absolute;right:6%;top:9%;width:120px;height:84px;
+  border:1px dashed rgba(53,168,224,.5);opacity:.5;
+}
+.bg-ui .bg-select i{position:absolute;width:8px;height:8px;background:var(--ui-blue)}
+.bg-ui .bg-select i:nth-child(1){left:-4px;top:-4px}
+.bg-ui .bg-select i:nth-child(2){right:-4px;top:-4px}
+.bg-ui .bg-select i:nth-child(3){left:-4px;bottom:-4px}
+.bg-ui .bg-select i:nth-child(4){right:-4px;bottom:-4px}
+.bg-ui .bg-panel{
+  position:absolute;left:5%;bottom:7%;width:130px;
+  display:flex;flex-direction:column;gap:9px;opacity:.4;
+}
+.bg-ui .bg-panel .bp-row{
+  display:block;height:7px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;
+}
+.bg-ui .bg-panel .bp-fill{display:block;height:100%;background:var(--ui-blue);border-radius:4px}
+
+/* ============ SCANLINES (game mode) ============ */
+.fx-scan{
+  position:fixed;inset:0;z-index:40;pointer-events:none;display:none;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.28) 0 1px,transparent 1px 4px);
+  opacity:.45;
+}
+body[data-mode="game"] .fx-scan{display:block}
+
+/* ============ BG CHARACTERS (game mode only) ============ */
+.bg-chars{position:fixed;inset:0;z-index:0;pointer-events:none;display:none;overflow:hidden}
+body[data-mode="game"] .bg-chars{display:block}
+.char{position:absolute;opacity:.45}
+.char img{display:block;width:100%;height:auto}
+/* --- Repo: slow meme flight --- */
+.char.repo{left:0;top:0;width:120px;opacity:.5;animation:repoFlight 52s linear infinite}
+.char.repo img{animation:repoBob 5s ease-in-out infinite}
+@keyframes repoFlight{
+  0%{transform:translate(-14vw,68vh)}
+  25%{transform:translate(25vw,52vh)}
+  50%{transform:translate(55vw,40vh)}
+  75%{transform:translate(82vw,26vh)}
+  100%{transform:translate(112vw,12vh)}
+}
+@keyframes repoBob{
+  0%,100%{transform:translateY(0) rotate(5deg)}
+  50%{transform:translateY(-24px) rotate(9deg)}
+}
+/* --- Peak: custom scrollbar. Track + draggable thumb, climbs with scroll --- */
+@media (min-width:901px){
+  body[data-mode="game"]{scrollbar-width:none}
+  body[data-mode="game"]::-webkit-scrollbar{display:none}
+  /* viewport scrollbar lives on <html>, hide it there too */
+  html:has(body[data-mode="game"]){scrollbar-width:none}
+  html:has(body[data-mode="game"])::-webkit-scrollbar{display:none}
+}
+.peak-scroll{position:fixed;inset:0;z-index:80;pointer-events:none;display:none}
+body[data-mode="game"] .peak-scroll{display:block}
+.peak-track{
+  position:absolute;right:43px;top:12vh;bottom:14vh;width:0;
+  border-left:2px dashed var(--line);opacity:.8;
+}
+.peak-track::before,.peak-track::after{
+  content:"";position:absolute;left:-6px;width:10px;height:10px;border-radius:3px;
+  background:var(--accent);opacity:.55;
+}
+.peak-track::before{top:-4px}
+.peak-track::after{bottom:-4px}
+.char.peak{
+  position:absolute;right:2px;top:0;width:84px;opacity:.95;
+  pointer-events:auto;cursor:grab;touch-action:none;will-change:transform;
+}
+.char.peak:active{cursor:grabbing}
+.char.peak .f2,.char.peak .f3{position:absolute;top:0;left:0;width:100%;opacity:0}
+.char.peak img{image-rendering:pixelated}
+.char.peak.climbing .f2{animation:pkA .9s linear infinite}
+.char.peak.climbing .f3{animation:pkB .9s linear infinite}
+/* цикл: база → шаг левой → база → шаг правой */
+@keyframes pkA{0%{opacity:0}25%{opacity:1}50%{opacity:0}100%{opacity:0}}
+@keyframes pkB{0%{opacity:0}50%{opacity:0}75%{opacity:1}100%{opacity:0}}
+/* --- Isaac: lives in the about section, cries while scrolling --- */
+.about{position:relative}
+.about-isaac{position:absolute;left:24px;bottom:12px;width:96px;opacity:.85;pointer-events:none}
+.about-isaac img{display:block;width:100%;height:auto;image-rendering:pixelated}
+.about-isaac .tear{
+  position:absolute;width:9px;height:12px;border-radius:50% 50% 60% 60%;
+  background:#7ec8ff;opacity:0;
+}
+.about-isaac .t1{left:60%;top:26%}
+.about-isaac .t2{left:74%;top:20%}
+.about-isaac .t3{left:68%;top:42%}
+.about-isaac.crying img{animation:sob .32s ease-in-out infinite}
+.about-isaac.crying .tear{animation:tearFall .7s ease-in infinite}
+.about-isaac.crying .t2{animation-delay:.24s}
+.about-isaac.crying .t3{animation-delay:.45s}
+@keyframes sob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.5px)}}
+@keyframes tearFall{
+  0%{transform:translateY(0) scale(.7);opacity:0}
+  20%{opacity:.95}
+  100%{transform:translateY(34px) scale(1.15);opacity:0}
+}
+@media (max-width:900px){.bg-chars{display:none!important}.peak-scroll{display:none!important}.about-isaac{display:none}}
 
 /* ============ MODE SWITCH (the core feature) ============ */
 .modeswitch{
@@ -105,7 +218,7 @@ body[data-mode="game"] .xp{display:flex}
 /* ============ HERO ============ */
 .hero{
   min-height:100dvh;display:flex;flex-direction:column;
-  padding:88px 24px 32px;gap:28px;
+  padding:64px 24px 24px;gap:20px;
 }
 .hero .top{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .hero .kicker{color:var(--tx-50)}
@@ -127,6 +240,90 @@ body[data-mode="game"] .xp{display:flex}
 /* content swap transition */
 .swap{transition:opacity .22s var(--ease-out),transform .22s var(--ease-out)}
 .swap.out{opacity:0;transform:translateY(8px)}
+
+/* hero stage: name behind photo, switch under photo */
+.hero-stage{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:8px 0}
+.hero-name{
+  position:absolute;left:50%;transform:translateX(-50%);
+  pointer-events:none;white-space:nowrap;
+  font-family:var(--font-display);font-weight:var(--hero-weight);
+  text-transform:uppercase;letter-spacing:.02em;line-height:.9;
+  font-size:clamp(72px,13vw,220px);
+  animation:nameIn .9s var(--ease-out) both;
+}
+.hero-name.n1{top:28%;z-index:1}
+.hero-name.n2{top:64%;z-index:3;color:var(--accent);animation-delay:.15s}
+@keyframes nameIn{from{opacity:0;filter:blur(10px)}to{opacity:1;filter:blur(0)}}
+.hero-stage .switch-wrap{position:relative;z-index:2}
+.hero-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:16px 32px;flex-wrap:wrap}
+.hero-foot h1{font-size:clamp(36px,5.5vw,88px)}
+
+/* ============ PHOTO CARD (cutout on photoshop artboard + editor UI) ============ */
+.photo-card{
+  position:relative;flex:0 0 auto;z-index:2;
+}
+.photo-card img{
+  position:relative;z-index:2;display:block;width:auto;
+  height:clamp(340px,calc(100dvh - 462px),720px);
+  -webkit-mask-image:linear-gradient(to bottom,#000 78%,transparent 97%);
+  mask-image:linear-gradient(to bottom,#000 78%,transparent 97%);
+}
+/* accent glow behind the person, as on the reference */
+.photo-card .glow{
+  position:absolute;inset:-30%;z-index:1;pointer-events:none;
+  background:radial-gradient(closest-side,var(--accent),transparent 72%);
+  opacity:.26;filter:blur(30px);
+}
+.photo-card .sel-frame{
+  position:absolute;inset:-12px;z-index:3;border:1.5px solid var(--ui-blue);pointer-events:none;
+}
+.photo-card .sel-frame i{position:absolute;width:10px;height:10px;background:var(--ui-blue);box-shadow:0 0 0 1.5px rgba(0,0,0,.55)}
+.photo-card .sel-frame i:nth-child(1){left:-5px;top:-5px}
+.photo-card .sel-frame i:nth-child(2){right:-5px;top:-5px}
+.photo-card .sel-frame i:nth-child(3){left:-5px;bottom:-5px}
+.photo-card .sel-frame i:nth-child(4){right:-5px;bottom:-5px}
+.photo-tag{
+  position:absolute;right:-12px;top:-40px;z-index:5;
+  background:var(--ui-blue);color:#04121b;
+  padding:6px 9px 5px;font-size:10px;letter-spacing:.04em;white-space:nowrap;
+}
+body[data-mode="game"] .photo-tag{font-family:'Press Start 2P',monospace;font-size:8px;text-transform:none;letter-spacing:0}
+.design-tag{
+  position:absolute;top:-8px;left:-40px;z-index:5;
+  max-width:200px;padding:9px 11px;
+  background:var(--ui-blue);color:#062a3f;
+  font-family:'Press Start 2P',monospace;font-size:9px;line-height:1.75;
+  text-transform:uppercase;
+  box-shadow:0 4px 0 rgba(0,0,0,.35);
+}
+/* chromatic ghost layer for lag bursts */
+.photo-card::after{
+  content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:url("assets/photo-cutout.png") center/cover;
+  -webkit-mask-image:linear-gradient(to bottom,#000 78%,transparent 97%);
+  mask-image:linear-gradient(to bottom,#000 78%,transparent 97%);
+  opacity:0;mix-blend-mode:screen;
+}
+
+/* ============ LAG / GLITCH (game mode only) ============ */
+@keyframes lagJerk{
+  0%{transform:translate(0)}
+  25%{transform:translate(-7px,3px)}
+  50%{transform:translate(5px,-2px) skewX(-1.5deg)}
+  75%{transform:translate(-3px,1px)}
+  100%{transform:translate(0)}
+}
+.lag{animation:lagJerk .34s steps(3,end) both}
+.photo-card.lag img{filter:saturate(1.9) contrast(1.15) hue-rotate(-12deg)}
+.photo-card.lag::after{opacity:.5;transform:translate(9px,-5px);filter:hue-rotate(130deg) saturate(2.4)}
+@keyframes rgbSplit{
+  0%{text-shadow:none;transform:translate(0)}
+  25%{text-shadow:5px 0 rgba(255,45,120,.9),-5px 0 rgba(0,229,255,.9);transform:translate(-5px,1px)}
+  50%{text-shadow:-3px 0 rgba(255,45,120,.9),3px 0 rgba(0,229,255,.9);transform:translate(4px,-1px);clip-path:inset(4% 0 62% 0)}
+  75%{text-shadow:2px 0 rgba(255,45,120,.9),-2px 0 rgba(0,229,255,.9);transform:translate(-1px,0);clip-path:none}
+  100%{text-shadow:none;transform:translate(0)}
+}
+#heroTitle.lag-rgb{animation:rgbSplit .34s steps(2,end) both}
 
 /* ============ SHOWREEL + SCRUBBER ============ */
 .reel{padding:8px 24px 64px}
@@ -229,6 +426,60 @@ body[data-mode="game"] .reel-frame:hover .ring svg path{fill:var(--accent-ink)}
 .svc .arrow{color:var(--tx-30);transition:color .2s,transform .25s var(--ease-out);font-size:20px}
 .svc:hover .arrow{color:var(--accent);transform:translateX(4px)}
 
+/* ============ ABOUT + LEGO ============ */
+.about-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:48px;align-items:center}
+.about-lead{
+  font-family:var(--font-display);font-weight:var(--hero-weight);
+  text-transform:uppercase;letter-spacing:.01em;
+  font-size:clamp(24px,3.2vw,44px);line-height:1.06;
+  margin-bottom:18px;
+}
+.about-lead em{font-style:normal;color:var(--accent)}
+.about-text>p{color:var(--tx-50);max-width:54ch}
+.about-chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+.chip{
+  border:1px solid var(--line);padding:8px 12px;color:var(--tx-50);
+  transition:border-color .2s,color .2s,transform .2s var(--ease-out);
+}
+.chip:hover{border-color:var(--accent);color:var(--tx);transform:translateY(-2px)}
+.about-lego{position:relative;min-height:290px}
+.lego{
+  position:absolute;display:block;
+  width:var(--w);height:30px;background:var(--c);border-radius:4px;
+  box-shadow:inset 0 -7px 0 rgba(0,0,0,.22),inset 0 4px 0 rgba(255,255,255,.28),0 14px 28px rgba(0,0,0,.4);
+  cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;
+}
+.lego:active{cursor:grabbing}
+.lego::before{
+  content:"";position:absolute;left:7px;right:7px;top:-10px;height:11px;pointer-events:none;
+  background-image:radial-gradient(circle at 50% 55%,var(--c) 0 6.5px,rgba(255,255,255,.22) 7px,transparent 7.5px);
+  background-size:calc((var(--w) - 14px) / var(--studs)) 11px;background-repeat:repeat-x;
+}
+.lego.b1{--c:#0f7cc4;--w:172px;--studs:6;left:8px;bottom:24px}
+.lego.b2{--c:var(--accent);--w:118px;--studs:4;left:36px;bottom:56px;transform:rotate(-2deg)}
+.lego.b3{--c:#c4281c;--w:64px;--studs:2;left:66px;bottom:88px;transform:rotate(1.5deg)}
+.lego.b4{--c:#f4f4f4;--w:36px;--studs:1;right:22%;top:26px;transform:rotate(14deg);height:26px}
+.lego.b5{--c:#2fbf71;--w:94px;--studs:3;right:8%;bottom:24px;transform:rotate(3deg)}
+.lego.b6{--c:#ff8c00;--w:64px;--studs:2;right:16%;bottom:56px;transform:rotate(-4deg)}
+.lego.b7{--c:#7a5af5;--w:118px;--studs:4;left:2%;top:18px;transform:rotate(-8deg)}
+.lego.b8{--c:#f4f4f4;--w:36px;--studs:1;right:40%;top:66px;transform:rotate(24deg);height:26px}
+.lego-note{position:absolute;left:8px;bottom:0;color:var(--tx-30)}
+/* assemble on scroll */
+.js .about-lego .lego{opacity:0;transform:translateY(26px) rotate(9deg)}
+.js .about-lego.in .lego{
+  opacity:1;
+  transition:opacity .5s var(--ease-out),transform .55s var(--ease-out);
+}
+.js .about-lego.in .lego.b1{transform:none;transition-delay:.05s}
+.js .about-lego.in .lego.b2{transform:rotate(-2deg);transition-delay:.18s}
+.js .about-lego.in .lego.b3{transform:rotate(1.5deg);transition-delay:.31s}
+.js .about-lego.in .lego.b4{transform:rotate(14deg);transition-delay:.44s}
+.js .about-lego.in .lego.b5{transform:rotate(3deg);transition-delay:.57s}
+.js .about-lego.in .lego.b6{transform:rotate(-4deg);transition-delay:.70s}
+.js .about-lego.in .lego.b7{transform:rotate(-8deg);transition-delay:.83s}
+.js .about-lego.in .lego.b8{transform:rotate(24deg);transition-delay:.96s}
+.js .about-lego.in .lego:hover{transform:translateY(-5px) rotate(0deg);transition-delay:0s}
+
 /* ============ CONTACT ============ */
 .contact{padding:96px 24px 32px}
 .contact .lead{color:var(--tx-50);max-width:56ch;margin-bottom:20px}
@@ -247,6 +498,7 @@ body[data-mode="talk"] .cta-band{border:1px solid var(--line)}
 }
 .cta-band .mono{opacity:.7}
 .foot{
+  position:relative;z-index:1;
   display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between;
   padding:28px 24px;color:var(--tx-30);
   font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;
@@ -310,6 +562,15 @@ body[data-mode="talk"] .cta-band{border:1px solid var(--line)}
   .site-nav{display:none}
   .xp{display:none!important}
   .modeswitch.hero-switch .ms-opt{font-size:11px;padding:13px 16px}
+  .about-grid{grid-template-columns:1fr;gap:24px}
+  .about-lego{min-height:280px}
+  .hero-name{font-size:clamp(44px,13vw,110px);top:40%}
+  .photo-card{width:min(300px,80vw)}
+  .photo-card img{width:100%;height:auto}
+  .design-tag{left:-16px;top:-14px;font-size:7px;max-width:150px;padding:7px 8px}
+  .bg-ui .n2,.bg-ui .bg-select{display:none}
+  .bg-ui .n1{width:170px;opacity:.25}
+  .bg-ui .bg-panel{opacity:.25}
 }
 @media (max-width:560px){
   html{overflow-x:hidden}
@@ -319,6 +580,8 @@ body[data-mode="talk"] .cta-band{border:1px solid var(--line)}
   .head-switch{margin:0 auto}
   .head-switch .ms-opt{font-size:10px;padding:8px 12px}
   .cta-band{margin:0 -16px;padding:22px 16px;flex-direction:column;align-items:flex-start}
+  .photo-card .sel-frame{inset:-8px}
+  .photo-tag{right:-8px;top:-36px}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
@@ -329,8 +592,48 @@ body[data-mode="talk"] .cta-band{border:1px solid var(--line)}
 <body data-mode="game">
 <div class="cursor" aria-hidden="true"></div>
 
+<!-- background: transparency checkerboard + editor UI fragments -->
+<div class="bg-ui" aria-hidden="true">
+  <svg class="bg-node n1" viewBox="0 0 260 260" fill="none">
+    <path d="M24 16 L24 116 L96 186" stroke="#35a8e0" stroke-width="1"/>
+    <circle cx="24" cy="16" r="8" fill="#35a8e0"/>
+    <circle cx="24" cy="116" r="6.5" stroke="#35a8e0" stroke-width="1.5"/>
+    <circle cx="96" cy="186" r="6.5" stroke="#35a8e0" stroke-width="1.5"/>
+    <path d="M96 186 L158 226" stroke="#35a8e0" stroke-width="1" stroke-dasharray="3 5"/>
+    <circle cx="158" cy="226" r="6.5" stroke="#35a8e0" stroke-width="1.5"/>
+  </svg>
+  <svg class="bg-node n2" viewBox="0 0 260 260" fill="none">
+    <path d="M24 16 L24 116 L96 186" stroke="#35a8e0" stroke-width="1"/>
+    <circle cx="24" cy="16" r="8" fill="#35a8e0"/>
+    <circle cx="24" cy="116" r="6.5" stroke="#35a8e0" stroke-width="1.5"/>
+    <circle cx="96" cy="186" r="6.5" stroke="#35a8e0" stroke-width="1.5"/>
+  </svg>
+  <div class="bg-select"><i></i><i></i><i></i><i></i></div>
+  <div class="bg-panel">
+    <span class="bp-row"><i class="bp-fill" style="width:22%"></i></span>
+    <span class="bp-row"><i class="bp-fill" style="width:64%"></i></span>
+    <span class="bp-row"><i class="bp-fill" style="width:41%"></i></span>
+  </div>
+</div>
+<div class="fx-scan" aria-hidden="true"></div>
+
+<!-- background game characters -->
+<div class="bg-chars" aria-hidden="true">
+  <div class="char repo"><img src="assets/char-repo.png" alt=""></div>
+</div>
+
+<!-- custom scrollbar: Peak climbs instead of the native one -->
+<div class="peak-scroll" aria-hidden="true">
+  <i class="peak-track"></i>
+  <div class="char peak">
+    <img class="f1" src="assets/char-peak-b1.png" alt="">
+    <img class="f2" src="assets/char-peak-b2.png" alt="">
+    <img class="f3" src="assets/char-peak-b3.png" alt="">
+  </div>
+</div>
+
 <header class="site-head">
-  <a class="brand" href="#top">ИЛЬЯ<em>.</em>МОНТАЖ</a>
+  <a class="brand" href="#top">ЗАХАР<em>.</em>МОНТАЖ</a>
   <div class="xp" aria-hidden="true">
     <span>LVL <b>5</b></span>
     <span class="bar"><i></i></span>
@@ -343,6 +646,7 @@ body[data-mode="talk"] .cta-band{border:1px solid var(--line)}
   </div>
   <nav class="site-nav" aria-label="Основная навигация">
     <a href="#works">Работы</a>
+    <a href="#about">Обо мне</a>
     <a href="#services">Услуги</a>
     <a href="#contact">Контакты</a>
   </nav>
@@ -352,11 +656,22 @@ body[data-mode="talk"] .cta-band{border:1px solid var(--line)}
   <!-- HERO -->
   <section class="hero">
     <div class="top">
-      <p class="kicker mono swap" id="kicker">Монтажёр · игровой контент · 3+ года за таймлайном</p>
+      <p class="kicker mono swap" id="kicker">Монтажёр · игровой контент · более года за таймлайном</p>
       <p class="kicker mono rv" style="text-align:right">Портфолио<br>2026</p>
     </div>
 
-    <div class="center">
+    <div class="hero-stage">
+      <span class="hero-name n1" aria-hidden="true">Шилин</span>
+      <span class="hero-name n2" aria-hidden="true">Захар</span>
+
+      <figure class="photo-card rv" id="photoCard">
+        <span class="glow" aria-hidden="true"></span>
+        <img src="assets/photo-cutout.png" alt="Шилин Захар, монтажёр — вырезанный портрет" width="853" height="1280">
+        <span class="sel-frame" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <span class="photo-tag mono" aria-hidden="true">ME_FINAL_v3.PNG</span>
+        <span class="design-tag" aria-hidden="true">Не умею в дизайн,<br>умею приколы</span>
+      </figure>
+
       <div class="switch-wrap">
         <div class="modeswitch hero-switch" role="group" aria-label="Выбор направления">
           <span class="ms-ind" aria-hidden="true"></span>
@@ -367,13 +682,13 @@ body[data-mode="talk"] .cta-band{border:1px solid var(--line)}
       </div>
     </div>
 
-    <div>
+    <div class="hero-foot">
       <h1 id="heroTitle" aria-live="polite">
-        <span class="row"><span>Монтаж,</span></span>
-        <span class="row"><span>который <span class="hl">держит</span></span></span>
-        <span class="row"><span>до конца</span></span>
+        <span class="row"><span>Монтирую</span></span>
+        <span class="row"><span>приколы.</span></span>
+        <span class="row"><span><span class="hl">Качественно</span></span></span>
       </h1>
-      <div class="meta swap" id="heroMeta" style="margin-top:18px">
+      <div class="meta swap" id="heroMeta">
         <span class="avail mono">Открыт для заказов</span>
         <span class="mono" id="heroTags">Фрагмуви · хайлайты · shorts · рекапы</span>
       </div>
@@ -402,6 +717,42 @@ body[data-mode="talk"] .cta-band{border:1px solid var(--line)}
     <div class="works" id="worksGrid"></div>
   </section>
 
+  <!-- ABOUT -->
+  <section class="section about" id="about">
+    <div class="section-head">
+      <h2>Обо мне</h2>
+      <span class="count mono">details.first</span>
+    </div>
+    <div class="about-grid">
+      <div class="about-text rv">
+        <p class="about-lead">Меня зовут Захар, и в монтаже для меня <em>детали — на первом месте</em>.</p>
+        <p>Ровный стык. Звук точно в бит. Субтитр, который успеваешь прочитать. Цвет, который не кричит. По отдельности этих мелочей никто не замечает — но разницу чувствуют все. Поэтому я пересматриваю каждый ролик глазами зануды, прежде чем отдать.</p>
+        <div class="about-chips">
+          <span class="chip mono">звук в бит</span>
+          <span class="chip mono">чистые стыки</span>
+          <span class="chip mono">ритм субтитров</span>
+          <span class="chip mono">цвет без крика</span>
+        </div>
+      </div>
+      <div class="about-lego rv" aria-hidden="true">
+        <span class="lego b1"></span>
+        <span class="lego b2"></span>
+        <span class="lego b3"></span>
+        <span class="lego b4"></span>
+        <span class="lego b5"></span>
+        <span class="lego b6"></span>
+        <span class="lego b7"></span>
+        <span class="lego b8"></span>
+        <span class="lego-note mono">детали. буквально. потаскай, сложи башню</span>
+      </div>
+    </div>
+
+    <div class="about-isaac" aria-hidden="true">
+      <img src="assets/char-isaac.png" alt="">
+      <i class="tear t1"></i><i class="tear t2"></i><i class="tear t3"></i>
+    </div>
+  </section>
+
   <!-- SERVICES -->
   <section class="section services" id="services">
     <div class="section-head">
@@ -423,7 +774,7 @@ body[data-mode="talk"] .cta-band{border:1px solid var(--line)}
 </main>
 
 <footer class="foot">
-  <span>© 2026 Илья · Монтаж</span>
+  <span>© 2026 Шилин Захар · Монтаж</span>
   <span id="footNote">Сделано на таймлайне № 247</span>
 </footer>
 
@@ -436,8 +787,8 @@ document.documentElement.classList.add('js');
   /* ============ CONTENT PER MODE ============ */
   var CONTENT={
     game:{
-      kicker:'Монтажёр · игровой контент · 3+ года за таймлайном',
-      title:['Монтаж,','который <span class="hl">держит</span>','до конца'],
+      kicker:'Монтажёр · игровой контент · более года за таймлайном',
+      title:['Монтирую','приколы.','<span class="hl">Качественно</span>'],
       tags:'Фрагмуви · хайлайты · shorts · рекапы',
       reelName:'SHOWREEL_GAME_2026.MP4', reelDur:'01:24',
       thumbs:['s-1','s-2','s-6','s-3','s-4','s-7'],
@@ -459,7 +810,7 @@ document.documentElement.classList.add('js');
       cta:'Давай <span class="hl">смонтируем</span>'
     },
     talk:{
-      kicker:'Монтажёр · подкасты и экспертный контент · 3+ года за таймлайном',
+      kicker:'Монтажёр · подкасты и экспертный контент · более года за таймлайном',
       title:['Голос,','который <span class="hl">дослушают</span>','до конца'],
       tags:'Подкасты · интервью · shorts · курсы',
       reelName:'SHOWREEL_TALK_2026.MP4', reelDur:'01:12',
@@ -485,10 +836,12 @@ document.documentElement.classList.add('js');
 
   /* ============ RENDERERS ============ */
   var heroTitle=document.getElementById('heroTitle');
+  var photoCard=document.getElementById('photoCard');
   var worksGrid=document.getElementById('worksGrid');
   var svcList=document.getElementById('svcList');
   var scrubber=document.getElementById('scrubber');
   var reelStill=document.getElementById('reelStill');
+  var reelFrame=document.querySelector('.reel-frame');
 
   function renderTitle(lines,animate){
     heroTitle.innerHTML=lines.map(function(l){
@@ -540,6 +893,146 @@ document.documentElement.classList.add('js');
     });
   }
 
+  /* ============ EPISODIC LAG (game mode only) ============ */
+  function lagBurst(el){
+    if(!el)return;
+    if(el===heroTitle){
+      el.classList.add('lag-rgb');
+      setTimeout(function(){el.classList.remove('lag-rgb')},260+Math.random()*240);
+    }else{
+      el.classList.add('lag');
+      setTimeout(function(){el.classList.remove('lag')},260+Math.random()*240);
+    }
+  }
+  function scheduleLag(){
+    setTimeout(function(){
+      if(!reduce&&!document.hidden&&body.getAttribute('data-mode')==='game'){
+        var targets=[heroTitle,photoCard,reelFrame];
+        lagBurst(targets[Math.floor(Math.random()*targets.length)]);
+        if(Math.random()<.22){
+          setTimeout(function(){lagBurst(heroTitle)},460);
+        }
+      }
+      scheduleLag();
+    },3600+Math.random()*4500);
+  }
+  scheduleLag();
+
+  /* ============ LEGO DRAG & SNAP ============ */
+  var legoBox=document.querySelector('.about-lego');
+  if(legoBox){
+    var legoBricks=[].slice.call(legoBox.querySelectorAll('.lego'));
+    var legoZ=10;
+    function legoStuds(el){return parseInt(getComputedStyle(el).getPropertyValue('--studs'),10)||1}
+    function legoPitch(el){return (el.offsetWidth-14)/legoStuds(el)}
+    function legoSnap(br){
+      var box=legoBox.getBoundingClientRect();
+      var r=br.getBoundingClientRect();
+      var bl=r.left-box.left,bt=r.top-box.top,bw=r.width,bh=r.height;
+      var best=null,bestD=26;
+      legoBricks.forEach(function(o){
+        if(o===br)return;
+        var or=o.getBoundingClientRect();
+        var ol=or.left-box.left,ot=or.top-box.top,ow=or.width,oh=or.height;
+        var p=legoPitch(o);
+        var candL=ol+Math.round((bl-ol)/p)*p;
+        var cand=[
+          {l:candL,t:ot-bh},          /* сверху на кирпичик */
+          {l:candL,t:ot+oh},          /* снизу */
+          {l:ol-bw,t:ot},             /* слева вплотную */
+          {l:ol+ow,t:ot}              /* справа вплотную */
+        ];
+        cand.forEach(function(c){
+          var d=Math.hypot(c.l-bl,c.t-bt);
+          if(d<bestD){bestD=d;best=c}
+        });
+      });
+      if(best){
+        br.style.transition='left .18s var(--ease-out),top .18s var(--ease-out)';
+        br.style.left=best.l+'px';
+        br.style.top=best.t+'px';
+      }
+    }
+    legoBricks.forEach(function(br){
+      br.addEventListener('pointerdown',function(e){
+        e.preventDefault();
+        try{br.setPointerCapture(e.pointerId)}catch(err){}
+        br.style.transition='none';
+        br.style.transform='none';
+        br.style.zIndex=++legoZ;
+        var box=legoBox.getBoundingClientRect();
+        var r=br.getBoundingClientRect();
+        var dx=e.clientX-r.left,dy=e.clientY-r.top;
+        function move(ev){
+          var x=ev.clientX-box.left-dx;
+          var y=ev.clientY-box.top-dy;
+          x=Math.max(-12,Math.min(x,box.width-r.width+12));
+          y=Math.max(-14,Math.min(y,box.height-r.height+6));
+          br.style.left=x+'px';
+          br.style.top=y+'px';
+          br.style.right='auto';
+          br.style.bottom='auto';
+        }
+        function up(){
+          br.removeEventListener('pointermove',move);
+          br.removeEventListener('pointerup',up);
+          br.removeEventListener('pointercancel',up);
+          legoSnap(br);
+        }
+        br.addEventListener('pointermove',move);
+        br.addEventListener('pointerup',up);
+        br.addEventListener('pointercancel',up);
+      });
+    });
+  }
+
+  /* ============ BG CHARACTERS: scroll reactions ============ */
+  var isaacEl=document.querySelector('.about-isaac');
+  var peakEl=document.querySelector('.char.peak');
+  if(isaacEl&&peakEl&&!reduce){
+    var sobTimer=null,climbTimer=null,charRaf=null;
+    var onScrollChars=function(){
+      if(charRaf)return;
+      charRaf=requestAnimationFrame(function(){
+        charRaf=null;
+        /* айзек плачет, пока скроллишь */
+        isaacEl.classList.add('crying');
+        clearTimeout(sobTimer);
+        sobTimer=setTimeout(function(){isaacEl.classList.remove('crying')},450);
+        /* скаут лезет вместо скроллбара */
+        peakEl.classList.add('climbing');
+        clearTimeout(climbTimer);
+        climbTimer=setTimeout(function(){peakEl.classList.remove('climbing')},350);
+        var doc=document.documentElement;
+        var max=Math.max(1,doc.scrollHeight-window.innerHeight);
+        var p=window.scrollY/max;
+        var y=window.innerHeight*(0.13+0.72*p);
+        var rot=Math.sin(window.scrollY/140)*4;
+        peakEl.style.transform='translateY('+Math.round(y)+'px) rotate('+rot.toFixed(1)+'deg)';
+      });
+    };
+    window.addEventListener('scroll',onScrollChars,{passive:true});
+    onScrollChars();
+    /* peak — это бегунок: его можно тянуть, и страница скроллится */
+    var pkDrag=false,pkStartY=0,pkStartScroll=0;
+    peakEl.addEventListener('pointerdown',function(e){
+      pkDrag=true;pkStartY=e.clientY;pkStartScroll=window.scrollY;
+      peakEl.setPointerCapture(e.pointerId);
+      peakEl.classList.add('climbing');
+      e.preventDefault();
+    });
+    peakEl.addEventListener('pointermove',function(e){
+      if(!pkDrag)return;
+      var doc=document.documentElement;
+      var max=Math.max(1,doc.scrollHeight-window.innerHeight);
+      var range=window.innerHeight*0.72; /* ход бегунка по треку */
+      window.scrollTo(0,pkStartScroll+(e.clientY-pkStartY)/range*max);
+    });
+    var pkEnd=function(){if(!pkDrag)return;pkDrag=false;peakEl.classList.remove('climbing');};
+    peakEl.addEventListener('pointerup',pkEnd);
+    peakEl.addEventListener('pointercancel',pkEnd);
+  }
+
   /* ============ MODE SWITCH ============ */
   var current='game';
   function applyMode(mode,animate){
@@ -561,6 +1054,11 @@ document.documentElement.classList.add('js');
     renderWorks(c.works);
     renderServices(c.services);
     renderScrubber(c.thumbs);
+    /* welcome-back lag when entering game mode */
+    if(mode==='game'&&animate&&!reduce){
+      setTimeout(function(){lagBurst(heroTitle)},500);
+      setTimeout(function(){lagBurst(photoCard)},780);
+    }
   }
   function switchMode(mode){
     if(mode===current)return;
